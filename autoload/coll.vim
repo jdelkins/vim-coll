@@ -10,14 +10,6 @@ set cpo&vim
 
 " Immutable list functions                                                  {{{
 
-function! coll#sort(l) abort
-  let new_list = deepcopy(a:l)
-  if type(a:l) == type([])
-    call sort(new_list)
-  endif
-  return new_list
-endfunction
-
 function! coll#reverse(l) abort
   let new_list = deepcopy(a:l)
   if type(a:l) == type([])
@@ -259,6 +251,28 @@ function! coll#filter(lambda, list) abort
   endif
   delfunction F
   return res
+endfunction
+
+" }}}
+
+" Function: sort()                                                          {{{
+" Purpose:
+"   Sort a list using a user-defined predicate. Returns a new list. Like the
+"   built-in sort() but returns a copied list and takes the sorting predicate
+"   as a code string rather than a funcref
+" Arguments:
+"   lambda    A string, which is a VimL expression comparing two values,
+"             taken from the list. These can be accessed as val1 and val2.
+"             The expression should yield <0, 0, or >0 depending based on
+"             whether val1 <, =, or > val2.
+"   list      The originating list or dictionary
+" Returns: A list or dictionary depending on the type of list provided
+
+function! coll#sort(lambda, list) abort
+  let F = s:lambda('let [val1,val2]=a:000[:1]', 'return ('.a:lambda.')')
+  let l = sort(copy(a:list), F)
+  delfunction F
+  return l
 endfunction
 
 " }}}
